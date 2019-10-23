@@ -25,7 +25,7 @@ def get_agents_info():
 
 
 @common.context_cached('system_groups')
-def get_groups():
+def get_group_names():
     """Get all groups in the system
 
     :return: List of group names

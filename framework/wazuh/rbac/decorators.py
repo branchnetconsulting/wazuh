@@ -9,7 +9,7 @@ from functools import wraps
 from api import configuration
 from api.authentication import AuthenticationManager
 from wazuh.common import rbac, broadcast
-from wazuh.core.core_utils import get_agents_info, expand_group, get_groups
+from wazuh.core.core_utils import get_agents_info, expand_group, get_group_names
 from wazuh.exception import WazuhError
 from wazuh.rbac.orm import RolesManager, PoliciesManager
 from wazuh.results import AffectedItemsWazuhResult
@@ -44,7 +44,7 @@ def _expand_resource(resource):
         if resource_type == 'agent:id':
             return get_agents_info()
         elif resource_type == 'group:id':
-            return get_groups()
+            return get_group_names()
         elif resource_type == 'role:id':
             with RolesManager() as rm:
                 roles = rm.get_roles()

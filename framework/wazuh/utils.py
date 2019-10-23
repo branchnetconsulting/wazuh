@@ -6,40 +6,24 @@ import errno
 import glob
 import hashlib
 import json
+import operator
 import re
+import shutil
 import stat
 import sys
+import typing
 from datetime import datetime, timedelta
 from itertools import groupby, chain
-from operator import itemgetter
-from os import remove, chmod, chown, path, listdir, close, mkdir, curdir
+from os import remove, chmod, chown, path, listdir, close, mkdir, curdir, utime
 from subprocess import call, CalledProcessError
 from tempfile import mkstemp
 from xml.etree.ElementTree import fromstring
 
 from wazuh import common
 from wazuh.database import Connection
-from wazuh.exception import WazuhException, WazuhError
+from wazuh.exception import WazuhError
 from wazuh.exception import WazuhException
-from wazuh.database import Connection
 from wazuh.wdb import WazuhDBConnection
-from wazuh import common
-from tempfile import mkstemp
-from subprocess import call, CalledProcessError
-from os import remove, chmod, chown, path, listdir, close, mkdir, curdir, rename, utime
-from datetime import datetime, timedelta
-import hashlib
-import json
-import stat
-import shutil
-import re
-import errno
-import operator
-import typing
-from itertools import groupby, chain
-from xml.etree.ElementTree import fromstring
-import glob
-import sys
 
 # Python 2/3 compatibility
 if sys.version_info[0] == 3:

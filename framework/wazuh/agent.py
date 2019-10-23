@@ -7,12 +7,13 @@ import operator
 from glob import glob
 from os import chmod, path, listdir
 from shutil import copyfile
+from typing import Dict
 
 from wazuh import common, configuration
 from wazuh.InputValidator import InputValidator
 from wazuh.core.core_agent import WazuhDBQueryAgents, WazuhDBQueryDistinctAgents, WazuhDBQueryGroupByAgents, \
     WazuhDBQueryMultigroups, Agent
-from wazuh.core.core_utils import get_agents_info, get_groups
+from wazuh.core.core_utils import get_agents_info, get_group_names
 from wazuh.database import Connection
 from wazuh.exception import WazuhError, WazuhInternalError, WazuhException
 from wazuh.rbac.decorators import expose_resources
@@ -411,7 +412,7 @@ def delete_groups(group_list=None):
                                       some_msg='Some groups were not deleted',
                                       none_msg='No group was deleted')
     affected_agents = set()
-    system_groups = get_groups()
+    system_groups = get_group_names()
     for group_id in group_list:
         try:
             # Check if group exists
@@ -495,7 +496,7 @@ def remove_agent_from_group(group_list=None, agent_list=None):
         raise WazuhError(1701)
     if agent_id == '000':
         raise WazuhError(1703)
-    if group_id not in get_groups():
+    if group_id not in get_group_names():
         raise WazuhError(1710)
 
     return WazuhResult({'message': Agent.unset_single_group_agent(agent_id=agent_id, group_id=group_id, force=True)})
@@ -530,7 +531,7 @@ def remove_agent_from_groups(agent_list=None, group_list=None):
     except ValueError:
         pass
 
-    system_groups = get_groups()
+    system_groups = get_group_names()
     for group_id in group_list:
         try:
             if group_id not in system_groups:
@@ -560,7 +561,7 @@ def remove_agents_from_group(agent_list=None, group_list=None):
                                       none_msg=f'No agent was removed from group {group_id}'
                                       )
     # Check if group exists
-    if group_id not in get_groups():
+    if group_id not in get_group_names():
         raise WazuhError(1710)
 
     for agent_id in agent_list:
@@ -773,3 +774,30 @@ def upload_group_file(group_list=None, file_data=None, file_name='agent.conf'):
     group_id = group_list[0]
 
     return WazuhResult({'message': configuration.upload_group_file(group_id, file_data, file_name=file_name)})
+
+
+def get_full_overview() -> WazuhResult:
+    """Get information about agents.
+
+    :return: Dictionary with information about agents
+    """
+    # get information from different methods of Agent class
+    stats_distinct_node = get_distinct_agents(fields=['node_name'])
+    groups = get_groups()
+    stats_distinct_os = get_distinct_agents(fields=['os.name',
+                                                    'os.platform', 'os.version'])
+    stats_version = get_distinct_agents(fields=['version'])
+    summary = get_agents_summary_status()
+    try:
+        last_registered_agent = get_agents(limit=1,
+                                           sort={'fields': ['dateAdd'], 'order': 'desc'},
+                                           q='id!=000').affected_items[0]
+    except IndexError:  # an IndexError could happen if there are not registered agents
+        last_registered_agent = {}
+    # combine results in an unique dictionary
+    result = {'nodes': stats_distinct_node, 'groups': groups,
+              'agent_os': stats_distinct_os, 'agent_status': summary,
+              'agent_version': stats_version,
+              'last_registered_agent': last_registered_agent}
+
+    return WazuhResult(result)
