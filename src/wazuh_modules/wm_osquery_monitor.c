@@ -268,7 +268,7 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
     }
 
     mdebug1("Launching '%s' with config file '%s'", osqueryd_path, osquery->config_path);
-    snprintf(config_path, sizeof(config_path), "--config_path=%s", osquery->config_path);
+    snprintf(config_path, sizeof(config_path), "--config_path=\"%s\"", osquery->config_path);
 
     // We check that the osquery demon is not down, in which case we run it again.
 
