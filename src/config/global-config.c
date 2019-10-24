@@ -48,6 +48,13 @@ int Read_GlobalSK(XML_NODE node, void *configp, __attribute__((unused)) void *ma
     if (!node)
         return 0;
 
+    if (output && Config->syscheck_ignore) {
+        int i;
+        for(i = 0; Config->syscheck_ignore[i]; i++){
+            os_free(Config->syscheck_ignore[i]);
+        }
+    }
+
     while (node[i]) {
         if (!node[i]->element) {
             if (output == NULL){
@@ -267,6 +274,42 @@ int Read_Global(XML_NODE node, void *configp, void *mailp, char **output)
         while (*ww != NULL) {
             mailto_size++;
             ww++;
+        }
+    }
+
+    if (output) {
+        if (Mail){
+            if(Mail->to) {
+                i = 0;
+                for(i = 0; Mail->to[i]; i++) {
+                    os_free(Mail->to[i]);
+                }
+                os_free(Mail->to);
+            }
+            if (Mail->from)
+                os_free(Mail->from);
+            if (Mail->reply_to)
+                os_free(Mail->reply_to);
+            if (Mail->idsname)
+                os_free(Mail->idsname);
+            if (Mail->smtpserver)
+                os_free (Mail->smtpserver);
+            if (Mail->heloserver)
+                os_free(Mail->heloserver);
+        }
+        if (Config) {
+            if (Config->custom_alert_output_format)
+                os_free(Config->custom_alert_output_format);
+            if (Config->geoipdb_file)
+                os_free(Config->geoipdb_file);
+            if (Config->prelude_profile)
+                os_free(Config->prelude_profile);
+            if (Config->zeromq_output_uri)
+                os_free(Config->zeromq_output_uri);
+            if (Config->zeromq_output_server_cert)
+                os_free(Config->zeromq_output_server_cert);
+            if (Config->zeromq_output_client_cert)
+                os_free(Config->zeromq_output_client_cert);
         }
     }
 
